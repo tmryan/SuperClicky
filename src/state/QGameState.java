@@ -6,11 +6,13 @@ import tryan.inq.controls.QKeyboardManager;
 import tryan.inq.controls.QMouseManager;
 
 public class QGameState {
-	boolean mouseClicked;
+	private boolean mouseClicked;
+	private boolean isGameOver;
 	private static int nextActorId;
 	private static int nextSceneid;
 	private QMouseManager mouseMan;
 	private QKeyboardManager keyMan;
+	private QUserInterfaceState uiState;
 	private HashMap<Integer, QSceneState> sceneStates;
 	private int currentScene;
 	
@@ -21,6 +23,7 @@ public class QGameState {
 		nextSceneid = 1;
 		this.mouseMan = mouseMan;
 		this.keyMan = keyMan;
+		uiState = new QUserInterfaceState();
 		sceneStates = new HashMap<Integer, QSceneState>();
 		currentScene = 0;
 	}
@@ -29,9 +32,11 @@ public class QGameState {
 		mouseClicked = false;
 		
 		nextActorId = 1;
-		nextSceneid = 1;
+		// Starting at 0 for main menu scene
+		nextSceneid = 0;
 		mouseMan = null;
 		keyMan = null;
+		uiState = new QUserInterfaceState();
 		sceneStates = new HashMap<Integer, QSceneState>();
 		currentScene = 0;
 	}
@@ -40,6 +45,7 @@ public class QGameState {
 		// Note: Temporary solution for high initial value from System.nanotime()
 		if(tickTime < 1000) {
 			resolveMousePosition();
+			resolveKeyCommands(tickTime);
 			sceneStates.get(currentScene).onTick(tickTime);
 		}
 	}
@@ -61,7 +67,7 @@ public class QGameState {
 	}
 	
 	public void resolveKeyCommands(long tickTime) {
-		// handle keyboard input here
+		sceneStates.get(currentScene).resolveKeyCommands(tickTime);
 	}
 	
 	public void addSceneState(QSceneState sceneState) {
@@ -80,12 +86,28 @@ public class QGameState {
 		return sceneStates.get(sceneId);
 	}
 	
+	public QKeyboardManager getKeyManager() {
+		return keyMan;
+	}
+	
 	public void setKeyboardManager(QKeyboardManager keyMan) {
 		this.keyMan = keyMan;
 	}
 	
+	public QMouseManager getMouseManager() {
+		return mouseMan;
+	}
+	
 	public void setMouseManager(QMouseManager mouseMan) {
 		this.mouseMan = mouseMan;
+	}
+	
+	public void endGame() {
+		isGameOver = true;
+	}
+	
+	public boolean isGameOver() {
+		return isGameOver;
 	}
 	
 }

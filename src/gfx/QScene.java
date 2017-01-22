@@ -11,8 +11,9 @@ public class QScene {
 	private int sceneWidth;
 	private int sceneHeight;
 	private QSceneState sceneState;
-	private QScenery backGroundImg;
+	private BufferedImage backGroundImg;
 	private QCameraActor camera;
+	private QResourceManager resMan;
 	
 	// Note: Need priority queue for discerning draw order?
 	// 		 Or separate player and other important actors from actor map and draw last?
@@ -21,11 +22,12 @@ public class QScene {
 		
 	public QScene(int width, int height, QResourceManager resMan, BufferedImage bgImg) {
 		sceneState = null;
-		backGroundImg = new QScenery(0, 0, bgImg, 0);
+		backGroundImg = bgImg;
 		sceneWidth = width;
 		sceneHeight = height;
 		actors = new TreeMap<Integer, QActor>();
 		camera = new QCameraActor(0, 0);
+		this.resMan = resMan;
 	}
 	
 	///////////////
@@ -45,7 +47,7 @@ public class QScene {
 	public void draw(Graphics2D g2) {
 		// Drawing background first
 		if(backGroundImg != null) {
-			backGroundImg.draw(g2);
+			g2.drawImage(backGroundImg, null, 0, 0);
 		}
 		
 		// Drawing actors
@@ -65,9 +67,13 @@ public class QScene {
 	public void addActor(QActor actor) {
 		actors.put(actor.getActorId(), actor);
 	}
-			
+	
+	public BufferedImage getBackgroundImg() {
+		return backGroundImg;
+	}
+		
 	public void setBackgroundImg(BufferedImage backGroundImg) {
-		this.backGroundImg = new QScenery(0, 0, backGroundImg, 0);
+		this.backGroundImg = backGroundImg;
 	}
 	
 	public int getSceneWidth() {
@@ -86,4 +92,7 @@ public class QScene {
 		return camera;
 	}
 	
+	protected QResourceManager resMan() {
+		return resMan;
+	}
 }

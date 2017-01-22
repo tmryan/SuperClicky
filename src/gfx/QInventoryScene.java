@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 import java.util.TreeMap;
 
 import tryan.inq.overhead.QResourceManager;
-import tryan.inq.state.QInventoryCellState;
 import tryan.inq.state.QInventoryState;
 
 public class QInventoryScene extends QScene {
@@ -49,20 +48,28 @@ public class QInventoryScene extends QScene {
 	
 	@Override
 	public void draw(Graphics2D g2) {
-		// Drawing actors
-		
-		if(!((QInventoryState) getSceneState()).isHintEnabled()) {
-			for(Integer id : actors.keySet()) {
-				actors.get(id).draw(g2);
+		if(!((QInventoryState) getSceneState()).isBreakTime()) {
+			if(!((QInventoryState) getSceneState()).isHintEnabled()) {
+				for(Integer id : actors.keySet()) {
+					actors.get(id).draw(g2);
+				}
+			} else {
+				for(Integer id : winConditionActors.keySet()) {
+					winConditionActors.get(id).draw(g2);
+				}
+			}
+			
+			if(((QInventoryState) getSceneState()).getHeldItem() != null && ((QInventoryState) getSceneState()).getHeldItem().getItemType() != null) {
+				heldItem.draw(g2);
+			}
+			
+			if(((QInventoryState) getSceneState()).isLevelWon()) {
+				g2.drawImage(resMan().getImage("roundEndOverlay"), null, 0, 0);
+			} else if(((QInventoryState) getSceneState()).isGameWon()) {
+				g2.drawImage(resMan().getImage("endGameOverlay"), null, 0, 0);
 			}
 		} else {
-			for(Integer id : winConditionActors.keySet()) {
-				winConditionActors.get(id).draw(g2);
-			}
-		}
-		
-		if(((QInventoryState) getSceneState()).getHeldItem() != null && ((QInventoryState) getSceneState()).getHeldItem().getItemType() != null) {
-			heldItem.draw(g2);
+			g2.drawImage(getBackgroundImg(), null, 0, 0);
 		}
 	}
 	

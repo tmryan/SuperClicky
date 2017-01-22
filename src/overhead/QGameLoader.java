@@ -7,22 +7,24 @@ import tryan.inq.gfx.QGraphics;
 import tryan.inq.gfx.QInventoryCell;
 import tryan.inq.gfx.QInventoryItem;
 import tryan.inq.gfx.QInventoryScene;
+import tryan.inq.gfx.QScene;
 import tryan.inq.state.QGameState;
 import tryan.inq.state.QGameWinConditions;
 import tryan.inq.state.QInventoryCellState;
 import tryan.inq.state.QInventoryItemState;
 import tryan.inq.state.QInventoryState;
 import tryan.inq.state.QItemType;
+import tryan.inq.state.QMainMenuState;
 
 /**
- * This class serves as the entry point into the program. 
+ * This class serves as the entry point into the Super Clicky game. 
  * 
  * Its responsibilities include loading resources and major systems, presenting 
- * the player with the main menu, managing load time game settings, and launching 
- * the game controller.
+ * the player with the main menu, managing load time game settings, launching 
+ * the game controller, and (currently) initializing game resources.
  * 
  * @author 		Thomas Ryan (Jan 2017)
- * @version		0.1 (Last update: Jan 2017)
+ * @version		0.2 (Last update: Jan 2017)
  *
  */
 
@@ -44,19 +46,24 @@ public class QGameLoader {
 		
 		// Creating game state
 		QGameState gameState = new QGameState();
-		
+			
 		// Creating graphics engine
 		QGraphics gfx = new QGraphics(gameState);
 		
-		// Initializing game
+		// Initializing game resources
 		initializeGame(resMan, gameState, gfx);
 		
 		// Creating game controller and game settings objects
 		new QGameController(resMan, gameState, gfx, settings);
 	}
 	
+	////////////////////
+	// Game Generation
+	////////////////
+	
 	// Note: Temporary location for game generation
-	// Tile type enum
+	
+	// Tile type enum for randomization
 	public enum TileType {
 		RED(QItemType.RED),
 		BLUE(QItemType.BLUE),
@@ -77,20 +84,27 @@ public class QGameLoader {
 		int INIT_WIDTH = 300;
 		int INIT_HEIGHT = 300;
 		int ROW_SIZE = 3;
-		int NUM_LEVELS = 9;
-		int HINT_DELAY = 3000;
+		int NUM_CELLS = ROW_SIZE * ROW_SIZE;
+		int HINT_DELAY = 2000;
+		
+		// Creating initial screen
+		QMainMenuState mainMenuState = new QMainMenuState(INIT_WIDTH, INIT_HEIGHT, gameState);
+		QScene mainMenuScene = new QScene(INIT_WIDTH, INIT_HEIGHT, resMan, resMan.getImage("mainScreen"));
+		gameState.addSceneState(mainMenuState);
+		mainMenuScene.attachSceneState(mainMenuState);
+		gfx.addScene(mainMenuScene, mainMenuState.getSceneStateId());
 		
 		int nextSceneId;
 		QInventoryState sceneState;
 		QInventoryScene scene;
 		TileType[] chosenTiles;
 		QGameWinConditions winConditions;
-		
-		for(int i = 3; i < NUM_LEVELS; i++) {			
+
+		for(int i = 3; i <= NUM_CELLS; i++) {
 			// Creating scene and sceneState
 			sceneState = new QInventoryState(INIT_WIDTH, INIT_HEIGHT, gameState, ROW_SIZE, 100, HINT_DELAY);
-			scene = new QInventoryScene(INIT_WIDTH, INIT_HEIGHT, resMan, null);
-			
+			scene = new QInventoryScene(INIT_WIDTH, INIT_HEIGHT, resMan, resMan.getImage("breakScreen"));
+
 			// Generating random tileset for this level and populating game board
 			chosenTiles = generateGameGrid(resMan, sceneState, scene, ROW_SIZE, 100, i, 1);
 			
@@ -100,7 +114,7 @@ public class QGameLoader {
 			gfx.addScene(scene, sceneState.getSceneStateId());
 			
 			// Setting win conditions
-			if(i == NUM_LEVELS - 1) {
+			if(i == NUM_CELLS) {
 				nextSceneId = 9999;
 			} else {
 				nextSceneId = sceneState.getSceneStateId() + 1;
@@ -108,14 +122,10 @@ public class QGameLoader {
 			winConditions = new QGameWinConditions(3, nextSceneId);
 			generateWinConds(resMan, winConditions, scene, ROW_SIZE, 100, i, 1, chosenTiles);
 			sceneState.setWinConditions(winConditions);
-			
-			
 		}
-						
-		// Hardcoding first scene load for now, will eventually load main menu scene initially
-		gameState.loadScene(1);
 	}
-		
+	
+	// Generates cell grid for each scene state
 	private static TileType[] generateGameGrid(QResourceManager resMan, QInventoryState sceneState, QInventoryScene scene, 
 			int rowSize, int cellWidth, int numTiles, int difficulty) 
 	{
@@ -169,6 +179,7 @@ public class QGameLoader {
 		return chosenTiles;
 	}
 	
+	// Generates win conditions for each scene state
 	private static void generateWinConds(QResourceManager resMan, QGameWinConditions winConditions, QInventoryScene scene, 
 			int rowSize, int cellWidth, int numTiles, int difficulty, TileType[] chosenTiles) 
 	{
@@ -181,7 +192,7 @@ public class QGameLoader {
 				cellGrid[i][j] = new QInventoryCellState(i * cellWidth, j * cellWidth, cellWidth, cellWidth, j, i, QGameState.generateActorId());
 				
 				// Creating cell actor and attaching cell state
-				QInventoryCell cell = new QInventoryCell(resMan.getImage("cellBG"), resMan, 1);
+				QInventoryCell cell = new QInventoryCell(resMan.getImage("hintCellBG"), resMan, 1);
 				cell.attachActorState(cellGrid[i][j]);
 				
 				// Adding cell actor to scene
@@ -212,8 +223,7 @@ public class QGameLoader {
 		}
 	}
 	
-	
-	
+	// Picks numTiles tiles at random from possible types
 	public static TileType[] generateTileList(int numTiles) {
 		TileType[] tileList = new TileType[numTiles];		
 		

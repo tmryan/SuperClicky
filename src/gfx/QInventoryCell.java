@@ -20,7 +20,11 @@ public class QInventoryCell extends QActor {
 				g2.drawImage(getImg(), null, getX(), getY());
 			} else {
 				g2.drawImage(getImg(), null, getX(), getY());
-				g2.drawImage(super.resMan().getImage(((QInventoryCellState) getActorState()).getItemState().getItemType().getTypeName()), null, getX(), getY());
+				g2.drawImage(resMan().getImage(((QInventoryCellState) getActorState()).getItemState().getItemType().getTypeName()), null, getX(), getY());
+			}
+			
+			if(getActorState().isHighlightable() && getActorState().isHighlighted()) {
+				g2.drawImage(resMan().getImage("cellHighlight"), null, getX(), getY());
 			}
 		}
 	}

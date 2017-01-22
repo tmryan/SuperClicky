@@ -2,11 +2,11 @@ package tryan.inq.state;
 
 import java.util.TreeMap;
 
-import tryan.inq.event.QAreaTrigger;
-import tryan.inq.event.QGameEventManager;
-import tryan.inq.event.QTimedEvent;
 import tryan.inq.gfx.Q2DCoords;
 import tryan.inq.gfx.QBounds;
+import tryan.inq.state.event.QAreaTrigger;
+import tryan.inq.state.event.QGameEventManager;
+import tryan.inq.state.event.QTimedEvent;
 
 // Note: Weather and time systems will belong to QSceneState
 
@@ -14,6 +14,8 @@ public class QSceneState {
 	private QBounds bounds;
 	private int id;
 	private TreeMap<Integer, QActorState> sceneryStates;
+	// Note: Actor states will be abstracted into two categories eventually
+	//		 So far I think only static and dynamic categories are necessary
 	private TreeMap<Integer, QActorState> interactableStates;
 	private QActorState highlightedActor;
 	private QGameEventManager eventMan;
@@ -32,13 +34,13 @@ public class QSceneState {
 		this.gameState = gameState;
 	}
 	
-	public void onTick(long tickTime) {	
-		// Note: Check all area triggers and timed events here
+	public void onTick(long tickTime) {
+		// Note: Need to check all area triggers and timed events here
 		eventMan.checkTimedEvents(tickTime);
 		
-//		for(QActorState interactable : interactableStates) {
-//			eventMan.addGameEvent(interactable.checkAreaTrigger());
-//		}
+		for(int actorId : interactableStates.keySet()) {
+			eventMan.addGameEvent(interactableStates.get(actorId).checkAreaTrigger());
+		}
 		
 		// Play queued game events
 		playNextEvent();
@@ -60,9 +62,7 @@ public class QSceneState {
 		eventMan.addTimedEvent(timedEvent);
 	}
 	
-	public void resolveMouseClick(int x, int y) {
-
-	}
+	public void resolveMouseClick(int x, int y) {}
 	
 	public void resolveMousePosition(Q2DCoords mousePos) {
 		QActorState foundActor = findInteractableByLocation(mousePos.getX() + bounds.getX(), mousePos.getY() + bounds.getY());	
@@ -78,9 +78,11 @@ public class QSceneState {
 			foundActor.onHover();
 		}
 	}
-					
+
+	public void resolveKeyCommands(long tickTime) {}
+	
 	public void playNextEvent() {
-		// Note: Should these events be executed one per tick or all? Set a limit? Use greedy?
+		// Note: Should use greedy technique to choose events
 		if(eventMan.hasNextEvent()) {
 			eventMan.getNextEvent().playEvent();
 		}
@@ -91,8 +93,8 @@ public class QSceneState {
 		
 		/*
 		 * Note: For now searching active area for collisions will be enough
-		 * 		 Will eventually need to put colliding actors into heap and
-		 * 		 return the highest click priority
+		 * 		 Will eventually need to look for actors within some subdivided
+		 * 	     scene area and test against relevant AABBs
 		 */	
 		
 		for(int id : interactableStates.keySet()) {
@@ -118,6 +120,14 @@ public class QSceneState {
 	
 	public int getHeight() {
 		return bounds.getHeight();
+	}
+	
+	public QActorState getHighlightedActor() {
+		return highlightedActor;
+	}
+	
+	public void setHightlightedActor(QActorState actorState) {
+		highlightedActor = actorState;
 	}
 	
 }

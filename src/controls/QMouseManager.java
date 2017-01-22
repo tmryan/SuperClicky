@@ -4,10 +4,12 @@ package tryan.inq.controls;
 import tryan.inq.gfx.Q2DCoords;
 
 public class QMouseManager {
+	private boolean mouseDragging;
 	private Q2DCoords lastMousePos;
 	private Q2DCoords currentMousePos;
 	
 	public QMouseManager() {
+		mouseDragging = false;
 		lastMousePos = new Q2DCoords(0, 0);
 		currentMousePos = new Q2DCoords(0, 0);
 	}
@@ -29,4 +31,17 @@ public class QMouseManager {
 		currentMousePos.setX(x);
 		currentMousePos.setY(y);
 	}
+	
+	public boolean isMouseDragging() {
+		return mouseDragging;
+	}
+	
+	public void mouseDragCommenced() {
+		mouseDragging = true;
+	}
+	
+	public void mouseDragReleased() {
+		mouseDragging = false;
+	}
+	
 }

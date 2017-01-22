@@ -27,9 +27,10 @@ public class QGraphics extends Canvas {
 	
 	public QGraphics(QGameState gState) {
 		this.gState = gState;
+		//this.ui = ui;
 		scenes = new HashMap<Integer, QScene>();
 		frame = new JFrame();
-
+		
 		// Note: add UI object here
 		fps = 0;
 		tDelta = 0;
@@ -52,6 +53,9 @@ public class QGraphics extends Canvas {
 		// Note: If resizable is true, need x+16 and y+38
 		frame.setResizable(false);
 		frame.setVisible(true);
+
+		// Requesting this component gains focus
+		requestFocus();
 		
 		// Creating double buffering strategy for this Canvas
 		createBufferStrategy(2);
