@@ -21,7 +21,7 @@ public class QKeyboardManager {
 		switch(key) {
 			// Entering hint mode for debugging
 			// P.S. This isn't in the demo
-			case KeyEvent.VK_W:
+			case KeyEvent.VK_H:
 				keyStates[0] = isPressed;
 				break;
 			default:
